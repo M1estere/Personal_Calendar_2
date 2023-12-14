@@ -1,7 +1,7 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from database_controller import save_edited_note, delete_note
+from database_controller import save_edited_note, delete_note, get_note_colour
 from settings import *
 
 
@@ -69,7 +69,7 @@ class EditNoteWindow(QMainWindow):
             print('Enter any description')
             return
 
-        result = save_edited_note(self.user_id, self.note.id, self.title_field.text(), self.note_desc_field.toPlainText(), self.note.creation_date, self.note_colour)
+        result = save_edited_note(self.note.id, self.title_field.text(), self.note_desc_field.toPlainText(), self.note_colour)
 
         if result == -1:
             print('Failure saving note, not existing')
@@ -83,7 +83,7 @@ class EditNoteWindow(QMainWindow):
 
     def create_colour_buttons(self):
         colour_list = ['red', 'green', 'blue', 'black', 'white']
-        self.note_colour = colour_list[0]
+        self.note_colour = colour_list[colour_list.index(get_note_colour(self.note.id))]
 
         self.btn_layout = QHBoxLayout()
         self.btn_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding))

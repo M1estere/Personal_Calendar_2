@@ -7,7 +7,7 @@ from Windows.AccountWindow import AccountWindow
 from Widgets.CustomCalendar import CustomCalendar
 from settings import *
 from styles import *
-from database_controller import get_list_for_calendar
+from database_controller import get_user_days_notes
 
 
 class MainWindow(QMainWindow):
@@ -47,7 +47,9 @@ class MainWindow(QMainWindow):
         font = QFont('Times', CALENDAR_FONT_SIZE)
         self.calendar = CustomCalendar(self)
         self.calendar.setStyleSheet(CALENDAR)
-        self.calendar.setDates(get_list_for_calendar(self.user_id), self.user_id)
+
+        self.calendar.setDates(get_user_days_notes(self.user_id), self.user_id)
+
         self.calendar.setFont(font)
 
         self.calendar.setGeometry(10, 10, WINDOW_WIDTH - 20, WINDOW_HEIGHT - 30)
@@ -58,7 +60,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.calendar)
 
     def update_calendar(self):
-        self.calendar.setDates(get_list_for_calendar(self.user_id), self.user_id)
+        self.calendar.setDates(get_user_days_notes(self.user_id), self.user_id)
         self.calendar.updateCells()
 
     def open_account_page(self):

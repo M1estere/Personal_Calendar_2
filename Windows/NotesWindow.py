@@ -2,7 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from settings import *
-from database_controller import get_user_notes #, search_note
+from database_controller import get_user_notes, get_note_colour, get_note_last_edit
 from Windows.NewNoteWindow import NewNoteWindow
 from Windows.EditNoteWindow import EditNoteWindow
 
@@ -34,16 +34,6 @@ class NotesWindow(QMainWindow):
 
         box_layout = QHBoxLayout()
         box_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
-
-        # self.search_input_field = QLineEdit()
-        # self.search_input_field.setPlaceholderText('Enter a word from note\'s title/text...')
-        # self.search_input_field.setMinimumSize(QSize(200, 20))
-
-        # self.search_button = QPushButton('Search')
-        # self.search_button.clicked.connect(self.search_note)
-
-        # box_layout.addWidget(self.search_input_field)
-        # box_layout.addWidget(self.search_button)
 
         self.scroll = QScrollArea()
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -86,7 +76,7 @@ class NotesWindow(QMainWindow):
         box_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding))
 
         colour_button = QPushButton()
-        style = (f'background-color: {note_document.note_colour};\n'
+        style = (f'background-color: {get_note_colour(note_document.id)};\n'
                  'border-width: 1px;\n'
                  'border-radius: 3px;\n'
                  'border-color: black;\n'
@@ -98,9 +88,10 @@ class NotesWindow(QMainWindow):
         note_title = note_document.title
 
         note_creation_year = str(note_document.creation_date.date())
-
+        last_edit_time = get_note_last_edit(note_document.id)
         text = (f' Note Title: {note_title}\n'
-                f' Date: {note_creation_year}')
+                f' Date: {note_creation_year}\n'
+                f' Last edit: {last_edit_time}')
         button = QPushButton(text)
 
         button.setStyleSheet("QPushButton { text-align: left; font: bold; }")
@@ -126,23 +117,6 @@ class NotesWindow(QMainWindow):
         self.edit_note_window.show()
 
         self.close()
-
-    # def search_note(self):
-    #     search_text = self.search_input_field.text()
-    #
-    #     if len(search_text) < 1:
-    #         print('Enter something to search!')
-    #         self.fill_notes_scroll_widget()
-    #         return
-    #
-    #     self.search_input_field.setText('')
-    #
-    #     notes_list = search_note(search_text, self.user_id, self.date)
-    #     if len(notes_list) < 1:
-    #         print('Bad search request!')
-    #         return
-    #     else:
-    #         self.refill_notes(notes_list)
 
     def new_note_button_clicked(self):
         new_notes_window = NewNoteWindow(self.user_id, self.date, self.main_window)

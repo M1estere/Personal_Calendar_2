@@ -97,7 +97,7 @@ class NewNoteWindow(QMainWindow):
 
         if add_note(self.user_id, note_title, note_desc, note_creation_whole, self.note_colour):
             print(f'Added note for\n\tUser {self.user_id}\n\tTitle {note_title}\n\tDesc {note_desc}')
-            # self.main_window.update_calendar()
+            self.main_window.update_calendar()
             self.close()
         else:
             print('Failure')
