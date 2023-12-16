@@ -91,14 +91,13 @@ def insert_note_for_date(date_record, stage_id):
 
 def record_for_date(date_to_check):
     try:
-        request = session.execute(f"SELECT * FROM days " +
-                                  f"WHERE date = '{date_to_check}'").one()
+        day = session.execute(f"SELECT * FROM days " +
+                              f"WHERE date = '{date_to_check}'").one()
+        return day
     except Exception as e:
         print('Get date error')
         print(e)
         return None
-
-    return request
 
 
 def save_edited_note(note_id, note_title, note_desc, note_colour):
@@ -144,10 +143,10 @@ def edit_note_in_date(note_id, note_colour):
 
 def get_note(note_id):
     try:
-        request = session.execute(f"SELECT * " +
+        note = session.execute(f"SELECT * " +
                                   f"FROM notes " +
-                                  f"WHERE id = {note_id}")
-        return request.one()
+                                  f"WHERE id = {note_id}").one()
+        return note
     except Exception as e:
         print('Get note error')
         print(e)
@@ -171,18 +170,16 @@ def get_note_last_edit(note_id):
 
 
 def delete_note(date, note_id):
-    note_doc = get_note(note_id)
+    note = get_note(note_id)
 
-    if note_doc is None:
+    if note is None:
         return -1
 
     try:
         delete_note_from_day(date, note_id)
 
-        metadata_id = note_doc.metadata_id
-
         session.execute(f"DELETE FROM metadata " +
-                        f"WHERE id = {metadata_id}")
+                        f"WHERE id = {note.metadata_id}")
         session.execute(f"DELETE FROM notes " +
                         f"WHERE id = {note_id}")
     except Exception as e:
@@ -201,13 +198,11 @@ def delete_note_from_day(date, note_id):
                                         f"FROM days " +
                                         f"WHERE date = '{date}'").one()
 
-        stage_id = stage_to_delete.id
-
         session.execute(f"DELETE FROM stage " +
                         f"WHERE id = {stage_to_delete.id}")
 
         session.execute(f"UPDATE days " +
-                        f"SET stages_id = stages_id - {{'{stage_id}'}} " +
+                        f"SET stages_id = stages_id - {{'{stage_to_delete.id}'}} " +
                         f"WHERE id = {day_to_change.id}")
     except Exception as e:
         print('Delete from day error')
@@ -222,12 +217,12 @@ def get_user_notes(user_id, note_creation_date):
         request = session.execute(f"SELECT * " +
                                   f"FROM notes " +
                                   f"WHERE user_id = {user_id}")
-        notes_collection = request.all()
+        notes = request.all()
 
-        if notes_collection is None:
+        if notes is None:
             return None
         else:
-            return get_date_notes(notes_collection, note_creation_date)
+            return get_date_notes(notes, note_creation_date)
     except Exception as e:
         print('Get user notes error')
         print(e)
@@ -255,35 +250,36 @@ def get_notes_for_day(date, dates_dict):
 
 
 def get_user_days_notes(user_id):
-    days = session.execute(f"SELECT * " +
-                           f"FROM days").all()
+    try:
+        days = session.execute(f"SELECT * " +
+                               f"FROM days").all()
 
-    res_dict = dict()
-    for day in days:
-        new_key = day.date.strftime('%Y-%m-%d')
-        res_dict[new_key] = list()
-        try:
+        res_dict = dict()
+        for day in days:
+            new_key = day.date.strftime('%Y-%m-%d')
+            res_dict[new_key] = list()
+
             notes_for_day = session.execute(f"SELECT * " +
                                             f"FROM notes " +
                                             f"WHERE creation_date = '{day.date}'").all()
             for note in notes_for_day:
                 if note.user_id == user_id:
                     res_dict[new_key].append(note)
-        except Exception as e:
-            print('Get user days error')
-            print(e)
-            return -1
 
-    return res_dict
+        return res_dict
+    except Exception as e:
+        print('Get user days error')
+        print(e)
+        return -1
 
 
 def get_note_colour(note_id):
     try:
-        request = session.execute(f"SELECT * " +
+        stage = session.execute(f"SELECT * " +
                                   f"FROM stage " +
                                   f"WHERE note_id = {note_id}").one()
 
-        return request.note_colour
+        return stage.note_colour
     except Exception as e:
         print('Get note colour error')
         print(e)
@@ -292,14 +288,14 @@ def get_note_colour(note_id):
 
 def get_user_info(nickname):
     try:
-        request = session.execute(f"SELECT id, nickname, name, password " +
-                                  f"FROM users " +
-                                  f"WHERE nickname = '{nickname}'")
-        return request.one()
+        user = session.execute(f"SELECT id, nickname, name, password " +
+                               f"FROM users " +
+                               f"WHERE nickname = '{nickname}'").one()
+        return user
     except Exception as e:
         print('Get user info error')
         print(e)
-        return -1
+        return None
 
 
 def get_user_by_id(user_id):
@@ -310,7 +306,7 @@ def get_user_by_id(user_id):
     except Exception as e:
         print('Get user by id error')
         print(e)
-        return -1
+        return None
 
 
 def update_user(user_id, new_nickname, new_name, new_password):
